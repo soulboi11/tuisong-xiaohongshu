@@ -1,0 +1,7 @@
+interface:
+  display_name: "小红书新笔记邮件推送"
+  short_description: "Email keyword-matched Xiaohongshu updates, source-grounded."
+  default_prompt: "Use $tuisong-xiaohongshu to monitor a Xiaohongshu creator for new notes matching my keywords and email me a source-grounded summary."
+
+policy:
+  allow_implicit_invocation: true
