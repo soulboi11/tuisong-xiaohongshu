@@ -14,7 +14,9 @@ available in the note's title, text, captions, or video transcript.
 Collect or confirm:
 
 - `creator_name`: the creator's displayed name.
-- `xiaohongshu_id`: the creator's Xiaohongshu ID, not a numeric note ID.
+- `xiaohongshu_id`: the creator's Xiaohongshu ID when the profile displays
+  one; not a numeric note ID. Do not require it for accounts that do not
+  display an ID.
 - `keywords`: one or more terms. Default match mode is `any`; use `all` only
   when the user explicitly requests it.
 - `recipient_email`: where alerts should be sent.
@@ -42,11 +44,17 @@ variable or secret store; keep a directly supplied code only in process memory.
 ## Resolve the Account
 
 Resolve the creator through the authenticated Xiaohongshu MCP profile or search
-tools. Require both the displayed name and Xiaohongshu ID to match exactly.
+tools, then choose the account matching rule from the resolved profile:
 
-- If several accounts are similar, do not guess.
-- If the MCP cannot resolve the Xiaohongshu ID, ask for an official profile URL
-  or one recent note URL from that account.
+- If the profile displays a Xiaohongshu ID, require both the displayed creator
+  name and that ID to match exactly.
+- If the profile does not display a Xiaohongshu ID, require the displayed
+  creator name to match exactly and do not invent or infer an ID.
+- Never use a numeric note ID as the creator's Xiaohongshu ID.
+- If several accounts share the same displayed name and the profile exposes no
+  ID that can distinguish them, do not guess.
+- If the MCP cannot resolve the requested account, ask for an official profile
+  URL or one recent note URL from that account.
 - Fetch only the creator's current visible note list. Do not run a historical
   keyword search or page through old posts.
 
@@ -59,13 +67,15 @@ ${CODEX_HOME:-~/.codex}/state/tuisong-xiaohongshu/state.json
 ```
 
 Store one subscription per exact combination of normalized creator name,
-Xiaohongshu ID, recipient email, keyword set, and match mode. A subscription
-records:
+Xiaohongshu ID when available, account match mode, recipient email, keyword
+set, and match mode. Use `name_and_id` when the profile displays an ID and
+`name_only` when it does not. A subscription records:
 
 ```json
 {
   "creator_name": "example",
   "xiaohongshu_id": "example_id",
+  "account_match_mode": "name_and_id",
   "recipient_email": "user@example.com",
   "keywords": ["keyword"],
   "match_mode": "any",
@@ -130,7 +140,7 @@ Use 2-4 short sentences or 3-5 bullets. The email must contain:
 - title;
 - publish time;
 - content summary;
-- creator name and Xiaohongshu ID;
+- creator name, and Xiaohongshu ID when available;
 - matched keywords;
 - note type, when available;
 - original note link, when available.
@@ -178,8 +188,10 @@ Body layout:
 {source_grounded_summary}
 ```
 
-Omit the link line only when no link was returned. Add the video limitation
-line when applicable. Plain text is sufficient; do not fabricate HTML content.
+Omit the Xiaohongshu ID parenthetical from the creator line when the resolved
+profile does not display an ID. Omit the link line only when no link was
+returned. Add the video limitation line when applicable. Plain text is
+sufficient; do not fabricate HTML content.
 
 After the pending queue is processed, do not initiate a new email when:
 
